@@ -67,7 +67,7 @@ def main():
         probs0 = probs[train_dset.plen:]
         ## ②选出前pk=1个
         topk1 = np.array(group_argtopk(np.array(train_dset.slideIDX[:train_dset.plen]), probs1, pk))
-        ## ②选出前nk=5个，并偏移topk1//k个位置
+        ## ②选出前nk=5个，并偏移plen个位置
         topk0 = np.array(group_argtopk(np.array(train_dset.slideIDX[train_dset.plen:]), probs0, nk))+train_dset.plen
         topk = np.append(topk1, topk0).tolist()
 #        torch.save(topk,'topk/%d.pth'%epoch)
