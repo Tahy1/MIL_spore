@@ -59,5 +59,5 @@ torch.save(trainlibrary, 'train-%d.lib'%box)
 testlibrary['targets'] = pos_targets[int(len(positives)*0.7):] + neg_targets[int(len(negatives)*0.7):]
 testlibrary['slides'] = pos_slides[int(len(positives)*0.7):] + neg_slides[int(len(negatives)*0.7):]
 testlibrary['grid'] = pos_grid[int(len(positives)*0.7):] + neg_grid[int(len(negatives)*0.7):]
-trainlibrary['size'] = box
+testlibrary['size'] = box
 torch.save(testlibrary, 'test-%d.lib'%box)
