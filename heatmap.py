@@ -5,7 +5,7 @@ Created on Tue Aug 27 09:32:56 2019
 @author: SCSC
 """
 
-import torch
+import torch, sys
 import numpy as np
 probs = torch.load('probs.pth')
 test = torch.load('test-100.lib')
@@ -28,15 +28,17 @@ heatmaps = np.array(heatmaps)
 
 import cv2
 for i in range(len(slides)):
-    img = cv2.imread('upload/%s.jpg'%slides[i])
+    sys.stdout.write('Processing: [{}/{}]\r'.format(i+1, len(slides)))
+    sys.stdout.flush()
+    img = cv2.imread('RGB/%s.jpg'%slides[i])
     heatmap = cv2.resize(heatmaps[i], (img.shape[1], img.shape[0]))
     heatmap = np.uint8(255 * heatmap)
     heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
     heatmap[heatmap!=255] = 0
     heatmap[:,:,2] = heatmap[:,:,0]
     heatmap[:,:,:2]=0
-    superimposed_img = heatmap * 0.4 + img
-    cv2.imwrite('testresult/%d_%s.jpg'%(targets[i], slides[i]), superimposed_img)
+    superimposed_img = heatmap * 0.9 + img
+    cv2.imwrite('results/%d_%s.jpg'%(targets[i], slides[i]), superimposed_img)
 
 
 #import cv2
