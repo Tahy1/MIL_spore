@@ -4,7 +4,6 @@ Created on Mon Jul 22 09:17:12 2019
 第一个卷积层的步长改为了1
 @author: SCSC
 """
-import torch
 import torch.nn as nn
 def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
     """3x3 convolution with padding"""
