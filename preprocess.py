@@ -9,7 +9,7 @@ Created on Mon Jul 22 09:56:20 2019
 import torch, os
 import numpy as np
 from PIL import Image
-box = 100
+box = 100 #切割小块的边长
 positives = os.listdir('positives')
 negatives = os.listdir('negatives')
 
