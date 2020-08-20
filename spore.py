@@ -1,4 +1,4 @@
-import torch, time, argparse
+import torch, time, argparse, os
 from random import shuffle as sf
 from torch import nn
 from torch import optim
@@ -18,8 +18,8 @@ def parse_args():
     parser.add_argument('--nk', type=int, help='number of negatives')
     parser.add_argument('--gpu', type=int, help='index of GPU')
     parser.add_argument('--n_epoch', type=int, default=300, help='number of epochs')
-    parser.add_argument('--test_every', type=int, default=1, help='how many epochs to validating when training')
-    parser.add_argument('--ckpt', help='must enter your checkpoint path! or none')
+    parser.add_argument('--test_every', type=int, default=1, help='as you see')
+    parser.add_argument('--ckpt', help='must enter your checkpoint path or none')
     args = parser.parse_args()
     return args
 
@@ -77,6 +77,16 @@ def main():
         start = 0
         best_acc = 0
 
+    if os.path.exists('Training_%d_%d.csv'%(pk,nk)):
+        s = 'Warning!\nThere are several related logs '+\
+              'or checkpoints exist in this path, make sure'+\
+                  'you wanna overwrite them, or you will lost them.\n'+\
+                      'enter YES to continue, others will exit.\n'
+        choise = input(s)
+        while choise == '':
+            choise = input()
+        if choise != 'YES':
+            raise Exception('You enter others.')
     # 定义log文件
     fconv = open('Training_%d_%d.csv'%(pk,nk), 'w')
     fconv.write('time,epoch,loss,error\n')
