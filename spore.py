@@ -94,7 +94,7 @@ def main():
     fconv.write('%d,0,0,0\n'%moment)
     fconv.close()
     
-    fconv = open('Testing.csv_%d_%d.csv'%(pk,nk), 'w')
+    fconv = open('Testing_%d_%d.csv'%(pk,nk), 'w')
     fconv.write('time,epoch,loss,error\n')
     moment = time.time()
     fconv.write('%d,0,0,0\n'%moment)
