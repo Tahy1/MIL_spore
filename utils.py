@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Aug 16 14:25:28 2019
-
-@author: SCSC
-"""
 import csv, torch, sys
 import torch.nn.functional as F
 import numpy as np
@@ -14,7 +8,7 @@ def writecsv(wlist, dst):
         csv_writer = csv.writer(fw)
         csv_writer.writerow(wlist)
 
-def inference(run, loader, model, criterion):
+def inference(run, loader, model, criterion, gpu):
     model.eval()
     running_loss = 0.
     probs = []
@@ -22,8 +16,8 @@ def inference(run, loader, model, criterion):
         for i, (input, target) in enumerate(loader):
             sys.stdout.write('Inference\tEpoch: [{}/{}]\tBatch: [{}/{}]\r'.format(run+1, 300, i+1, len(loader)))
             sys.stdout.flush()
-            target = target.cuda()
-            input = input.cuda()
+            target = target.cuda(device=gpu, non_blocking=True)
+            input = input.cuda(device=gpu, non_blocking=True)
             output = model(input)
             loss = criterion(output, target)
             running_loss += loss.item()*input.size(0)
@@ -34,15 +28,15 @@ def inference(run, loader, model, criterion):
     loss = running_loss/len(loader.dataset)
     return loss, probs
 
-def train(loader, model, criterion, optimizer):
+def train(loader, model, criterion, optimizer, gpu):
     model.train()
     running_loss = 0.
     probs = []
     real = []
     for i, (input, target) in enumerate(loader):
         real.extend(target.numpy().tolist())
-        input = input.cuda()
-        target = target.cuda()
+        input = input.cuda(device=gpu, non_blocking=True)
+        target = target.cuda(device=gpu, non_blocking=True)
         output = model(input)
         pred = F.softmax(output, dim=1)
         probs.extend(pred.detach()[:,1].cpu().numpy().tolist())
