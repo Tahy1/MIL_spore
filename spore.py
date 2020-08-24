@@ -54,12 +54,12 @@ def main():
     train_dset = XDataset('train-100.lib', train_trans=train_trans, infer_trans=infer_trans)
     train_loader = torch.utils.data.DataLoader(
         train_dset,
-        batch_size=256,shuffle=False,
+        batch_size=128,shuffle=False,
         pin_memory=True)
     test_dset = XDataset('test-100.lib', train_trans=train_trans, infer_trans=infer_trans)
     test_loader = torch.utils.data.DataLoader(
         test_dset,
-        batch_size=256,shuffle=False,
+        batch_size=128,shuffle=False,
         pin_memory=True)
     
     if ckpt != 'none':
@@ -73,32 +73,43 @@ def main():
         model.load_state_dict(checkpoint['state_dict'])
         best_acc = checkpoint['best_acc']
         optimizer.load_state_dict(checkpoint['optimizer'])
+        if not os.path.exists('Training_%d_%d.csv'%(pk,nk)):
+            fconv = open('Training_%d_%d.csv'%(pk,nk), 'w')
+            fconv.write('time,epoch,loss,error\n')
+            moment = time.time()
+            fconv.write('%d,0,0,0\n'%moment)
+            fconv.close()
+        if not os.path.exists('Testing_%d_%d.csv'%(pk,nk)):
+            fconv = open('Testing_%d_%d.csv'%(pk,nk), 'w')
+            fconv.write('time,epoch,loss,error\n')
+            moment = time.time()
+            fconv.write('%d,0,0,0\n'%moment)
+            fconv.close()
     else:
+        if os.path.exists('Training_%d_%d.csv'%(pk,nk)):
+            s = 'Warning!\nThere are several related logs '+\
+                  'or checkpoints exist in this path, make sure'+\
+                      'you wanna overwrite them, or you will lost them.\n'+\
+                          'enter YES to continue, others will exit.\n'
+            choise = input(s)
+            while choise == '':
+                choise = input()
+            if choise != 'YES':
+                raise Exception('You enter others.')
         start = 0
         best_acc = 0
-
-    if os.path.exists('Training_%d_%d.csv'%(pk,nk)):
-        s = 'Warning!\nThere are several related logs '+\
-              'or checkpoints exist in this path, make sure'+\
-                  'you wanna overwrite them, or you will lost them.\n'+\
-                      'enter YES to continue, others will exit.\n'
-        choise = input(s)
-        while choise == '':
-            choise = input()
-        if choise != 'YES':
-            raise Exception('You enter others.')
-    # 定义log文件
-    fconv = open('Training_%d_%d.csv'%(pk,nk), 'w')
-    fconv.write('time,epoch,loss,error\n')
-    moment = time.time()
-    fconv.write('%d,0,0,0\n'%moment)
-    fconv.close()
-    
-    fconv = open('Testing_%d_%d.csv'%(pk,nk), 'w')
-    fconv.write('time,epoch,loss,error\n')
-    moment = time.time()
-    fconv.write('%d,0,0,0\n'%moment)
-    fconv.close()
+        # 创建log文件
+        fconv = open('Training_%d_%d.csv'%(pk,nk), 'w')
+        fconv.write('time,epoch,loss,error\n')
+        moment = time.time()
+        fconv.write('%d,0,0,0\n'%moment)
+        fconv.close()
+        
+        fconv = open('Testing_%d_%d.csv'%(pk,nk), 'w')
+        fconv.write('time,epoch,loss,error\n')
+        moment = time.time()
+        fconv.write('%d,0,0,0\n'%moment)
+        fconv.close()
     
     # 开始迭代
     for epoch in range(start, n_epoch):
