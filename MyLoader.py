@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Aug 16 09:59:53 2019
-
-@author: SCSC
-"""
-
 import torch
 import sys
 from PIL import Image
@@ -54,7 +47,7 @@ class MyDataset(data.Dataset):
 #####################################################################
 
 class OrigDataset(data.Dataset):
-    def __init__(self, libraryfile='', transform=None):
+    def __init__(self, libraryfile='', infer_trans=None, train_trans=None):
         lib = torch.load(libraryfile)
         self.targets = lib['targets']
         self.size = lib['size'] // 2
@@ -78,7 +71,8 @@ class OrigDataset(data.Dataset):
         self.plen = plen
         self.grid = grid
         self.slideIDX = slideIDX
-        self.transform = transform
+        self.infer_trans = infer_trans
+        self.train_trans = train_trans
         self.mode = None
         
     def setmode(self,mode):
@@ -90,14 +84,14 @@ class OrigDataset(data.Dataset):
             slideIDX = self.slideIDX[index]
             coord = self.grid[index]
             img = self.slides[slideIDX].crop((coord[1]-self.size,coord[0]-self.size,coord[1]+self.size,coord[0]+self.size))
-            if self.transform is not None:
-                img = self.transform(img)
+            if self.infer_trans is not None:
+                img = self.infer_trans(img)
             return img, self.targets[slideIDX]
         elif self.mode == 2:
             slideIDX, coord, target = self.t_data[index]
             img = self.slides[slideIDX].crop((coord[1]-self.size,coord[0]-self.size,coord[1]+self.size,coord[0]+self.size))
-            if self.transform is not None:
-                img = self.transform(img)
+            if self.train_trans is not None:
+                img = self.train_trans(img)
             return img, target
     def __len__(self):
         if self.mode == 1:
