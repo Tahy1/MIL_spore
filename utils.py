@@ -1,6 +1,8 @@
 import csv, torch, sys
+from torch import nn
 import torch.nn.functional as F
 import numpy as np
+from sklearn.metrics import confusion_matrix
 
 def writecsv(wlist, dst):
     wlist = list(map(str,wlist))
@@ -61,6 +63,20 @@ def calc_err(probs,real):
     return err
 #    return err, fpr, fnr
 
+def tfpn(probs, real):
+    probs = np.array(probs)
+    real = np.array(real)
+    assert len(probs) == len(real)
+    [[tn, fp], [fn, tp]] = confusion_matrix(real, probs)
+    return tp, tn, fp, fn
+
+def score(tp, tn, fp, fn):
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    f1 = 2 * precision * recall / (precision + recall)
+    S = (tp + f1) / (tp + fn + 1)
+    return S, f1
+    
 
 def group_argtopk(groups, data,k=1):  #groups为所有瓦片对应的切片序号组成的array，data为这些瓦片的预测值
     order = np.lexsort((data, groups))  #首先按照groups的元素排序，如果出现相同大小的情况，则再按照data排序，由小到大。
@@ -82,3 +98,46 @@ def group_max(groups, data, nmax):
     index[:-1] = groups[1:] != groups[:-1]
     out[groups[index]] = data[index]  #由Numpy的填充性质可得，可以保证被抽到的groups都有该groups最大的data(概率)，同时最大的概率对应的group一定会存在于out中。
     return out
+
+class FocalLoss(nn.Module):
+    def __init__(self, class_num, gpu=None, alpha=None, gamma=2, size_average=True):
+        super(FocalLoss, self).__init__()
+        if alpha is None:
+            self.alpha = torch.ones(class_num, 1)
+        self.gamma = gamma
+        self.class_num = class_num
+        self.size_average = size_average
+        self.gpu = gpu
+
+    def forward(self, inputs, targets):
+        targets = targets.reshape(targets.shape[0],1)
+        onehots = torch.zeros(targets.shape[0], self.class_num)
+        m = nn.Sigmoid()
+        if self.gpu != None:
+            self.alpha = self.alpha.cuda(device=self.gpu)
+            onehots = onehots.cuda(device=self.gpu)
+        onehots = torch.scatter(onehots, 1, targets, 1)
+        P = m(inputs)
+        loss = - (1 - P) ** self.gamma * onehots * torch.log(P) - \
+            P ** self.gamma * (1 - onehots) * torch.log(1 - P)
+        if self.size_average:
+            loss = loss.mean()
+        else:
+            loss = loss.sum()
+        return loss
+
+class BCE(nn.Module):
+    def __init__(self, class_num, gpu=None):
+        super(BCE, self).__init__()
+        self.class_num = class_num
+        self.gpu = gpu
+    def forward(self, inputs, targets):
+        loss = nn.BCELoss()
+        m = nn.Sigmoid()
+        targets = targets.reshape(targets.shape[0],1)
+        onehots = torch.zeros(targets.shape[0], self.class_num)
+        if self.gpu != None:
+            onehots = onehots.cuda(device=self.gpu)
+        onehots = torch.scatter(onehots, 1, targets, 1)
+        output = loss(m(inputs), onehots)
+        return output
