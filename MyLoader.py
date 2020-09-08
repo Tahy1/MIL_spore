@@ -12,8 +12,8 @@ class MyDataset(data.Dataset):
         plen = 0
         self.targets = lib['targets']
         for i,name in enumerate(lib['slides']):
-            slide = Image.open('RGB/%s.jpg'%name)
-            sys.stdout.write('Cutting JPGs: [{}/{}]\r'.format(i+1, len(lib['slides'])))
+            slide = Image.open('RGB/%s.png'%name)
+            sys.stdout.write('Cutting pngs: [{}/{}]\r'.format(i+1, len(lib['slides'])))
             sys.stdout.flush()
             grids = lib['grid'][i]
             for grid in grids:
@@ -56,9 +56,9 @@ class OrigDataset(data.Dataset):
         slideIDX = []
         plen = 0
         for i,name in enumerate(lib['slides']):
-            sys.stdout.write('Opening JPGs: [{}/{}]\r'.format(i+1, len(lib['slides'])))
+            sys.stdout.write('Opening pngs: [{}/{}]\r'.format(i+1, len(lib['slides'])))
             sys.stdout.flush()
-            slides.append(Image.open('RGB/%s.jpg'%name))
+            slides.append(Image.open('RGB/%s.png'%name))
             #Flatten grid
             g = lib['grid'][i]
             grid.extend(g)
